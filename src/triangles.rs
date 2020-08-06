@@ -6,11 +6,12 @@ use num::traits::PrimInt;
 use crate::traits::Graph;
 use crate::{StaticGraph, Vertex};
 
-pub fn triangles<V>(g: &impl Graph<V>) -> u128 where V:PrimInt + AsPrimitive<usize> {
+pub fn triangles<V>(g: &impl Graph<V>) -> (u128, u128) where V:PrimInt + AsPrimitive<usize> {
     let mut dodg: Vec<Vec<V>> = Vec::with_capacity(g.nv().as_());
 
     let mut degrees = vec![V::zero(); g.nv().as_()];
     let mut ntri = 0u128;
+    let mut nwedge = 0u128;
 
     // let z:Vec<V> = g.vertices().collect();
     // println!("minvert = {:?}, maxvert = {:?}", z.iter().min(), z.iter().max());
@@ -32,6 +33,7 @@ pub fn triangles<V>(g: &impl Graph<V>) -> u128 where V:PrimInt + AsPrimitive<usi
             let v = uvec[i];
             let vvec = &dodg[v.as_()];
             for j in (i+1)..ulen {
+                nwedge += 1;
                 let w = uvec[j];
                 let wvec = &dodg[w.as_()];
                 let w_to_v = degrees[v.as_()] > degrees[w.as_()] || (degrees[v.as_()] == degrees[w.as_()] && v > w);
@@ -41,7 +43,7 @@ pub fn triangles<V>(g: &impl Graph<V>) -> u128 where V:PrimInt + AsPrimitive<usi
             }
         }
     }
-    ntri
+    (ntri, nwedge)
 }
 
 fn optimal_contiguous_partition(weights: Vec<usize>, n_partitions: usize) -> Vec<Range<usize>>

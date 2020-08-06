@@ -76,12 +76,12 @@ fn main() {
         println!("Load took {}ms", now.elapsed().as_micros() as f64 / 1000.0);
         println!("h = {}", h);
         println!("starting first triangle count");
-        let ntri = triangles(&h);
-        println!("{} triangles", ntri);
+        let (ntri, nwedge) = triangles(&h);
+        println!("{} triangles, {} wedges", ntri, nwedge);
         println!("starting looped triangle count");
         for _ in 0..NRUNS {
             let now = Instant::now();
-            let _ntri = triangles(&h);
+            let (_ntri, _nwedge) = triangles(&h);
             let elp = now.elapsed().as_micros() as f64 / 1000.0;
             avg += elp;
             print!(".");
