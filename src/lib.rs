@@ -1,9 +1,6 @@
 use crate::traits::Graph;
 use std::fmt;
-use std::fs::File;
 use std::io::BufRead;
-use std::io::BufReader;
-use std::path::Path;
 pub mod traits;
 pub mod traversals;
 pub mod triangles;
@@ -61,30 +58,29 @@ impl Graph<Vertex> for StaticGraph {
         }
     }
 
-    fn from_edge_file(fname: &Path) -> Self {
-        let f = File::open(fname).expect("Cannot open file");
-        let file = BufReader::new(&f);
+    fn from_edge_reader(reader: impl BufRead) -> Result<Self, String> {
         let mut edgelist: Vec<(Vertex, Vertex)> = vec![];
-        for line in file.lines() {
-            let l = line.expect("error reading file"); // produces a std::string::String
+        for line in reader.lines() {
+            let l = line.expect("error reading reader"); // produces a std::string::String
             let l = l.trim(); // changes to &str
             if l.starts_with("#") {
                 continue;
             }
             let mut eit = l.split_whitespace();
-            let s1 = eit.next().expect("Invalid line (first field)");
-            let s2 = eit.next().expect("Invalid line (second field)");
+            let s1 = eit.next().ok_or("Invalid line (first field)")?;
+            let s2 = eit.next().ok_or("Invalid line (second field)")?;
             if eit.next().is_some() {
-                panic!("Invalid line (extra fields)");
+                return Err(String::from("Invalid line (extra fields)"));
             }
-            let src: u32 = s1.parse().unwrap();
-            let dst: u32 = s2.parse().unwrap();
+            let src: u32 = s1.parse().map_err(|_| "Invalid parse (first field)")?;
+            let dst: u32 = s2.parse().map_err(|_| "Invalid parse (second field)")?;
             edgelist.push((src, dst));
             edgelist.push((dst, src));
         }
         let adj = graph_matrix::GraphMatrix::from_edges(edgelist);
-        StaticGraph { adj }
+        Ok(StaticGraph { adj })
     }
+
 }
 
 impl Graph<Vertex> for StaticDiGraph {
@@ -130,30 +126,28 @@ impl Graph<Vertex> for StaticDiGraph {
         }
     }
 
-    fn from_edge_file(fname: &Path) -> Self {
-        let f = File::open(fname).expect("Cannot open file");
-        let file = BufReader::new(&f);
+    fn from_edge_reader(reader: impl BufRead) -> Result<Self, String> {
         let mut edgelist: Vec<(Vertex, Vertex)> = vec![];
-        for line in file.lines() {
-            let l = line.expect("error reading file"); // produces a std::string::String
+        for line in reader.lines() {
+            let l = line.expect("error reading reader"); // produces a std::string::String
             let l = l.trim(); // changes to &str
             if l.starts_with("#") {
                 continue;
             }
             let mut eit = l.split_whitespace();
-            let s1 = eit.next().expect("Invalid line (first field)");
-            let s2 = eit.next().expect("Invalid line (second field)");
+            let s1 = eit.next().ok_or("Invalid line (first field)")?;
+            let s2 = eit.next().ok_or("Invalid line (second field)")?;
             if eit.next().is_some() {
-                panic!("Invalid line (extra fields)");
+                return Err(String::from("Invalid line (extra fields)"));
             }
-            let src: u32 = s1.parse().unwrap();
-            let dst: u32 = s2.parse().unwrap();
+            let src: u32 = s1.parse().map_err(|_| "Invalid parse (first field)")?;
+            let dst: u32 = s2.parse().map_err(|_| "Invalid parse (second field)")?;
             edgelist.push((src, dst));
         }
         let bedges = edgelist.clone().iter().map(|x| (x.1, x.0)).collect();
         let fadj = graph_matrix::GraphMatrix::from_edges(edgelist);
         let badj = graph_matrix::GraphMatrix::from_edges(bedges);
-        StaticDiGraph { fadj, badj }
+        Ok(StaticDiGraph { fadj, badj })
     }
 }
 
