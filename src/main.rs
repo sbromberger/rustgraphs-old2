@@ -1,12 +1,13 @@
 use rustgraphs::traits::Graph;
 use rustgraphs::{StaticDiGraph, StaticGraph, triangles::triangles, triangles::threaded_triangles, triangles::threaded_triangles_csr, traversals::bfs, traversals::dijkstra};
 use std::env;
+use std::error::Error;
 use std::path::Path;
 use std::time::Instant;
 pub const NRUNS: usize = 50;
 
 fn weights(_: u32, _: u32) -> f32 { 1f32 }
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
     let filename = &args[1];
     let src = &args[2];
@@ -18,7 +19,7 @@ fn main() {
 
     if op == "bfs" {
         let now = Instant::now();
-        let h: StaticDiGraph = StaticDiGraph::from_edge_file(Path::new(filename));
+        let h: StaticDiGraph = StaticDiGraph::from_edge_file(Path::new(filename))?;
         println!("Load took {}ms", now.elapsed().as_micros() as f64 / 1000.0);
         println!("h = {}", h);
 
@@ -48,7 +49,7 @@ fn main() {
     }
     if op == "dijkstra" {
         let now = Instant::now();
-        let h: StaticDiGraph = StaticDiGraph::from_edge_file(Path::new(filename));
+        let h: StaticDiGraph = StaticDiGraph::from_edge_file(Path::new(filename))?;
         println!("Load took {}ms", now.elapsed().as_micros() as f64 / 1000.0);
         println!("h = {}", h);
 
@@ -72,7 +73,7 @@ fn main() {
     }
     if op == "triangle" {
         let now = Instant::now();
-        let h: StaticGraph = StaticGraph::from_edge_file(Path::new(filename));
+        let h: StaticGraph = StaticGraph::from_edge_file(Path::new(filename))?;
         println!("Load took {}ms", now.elapsed().as_micros() as f64 / 1000.0);
         println!("h = {}", h);
         println!("starting first triangle count");
@@ -96,7 +97,7 @@ fn main() {
 
     if op == "threaded_triangles" {
         let now = Instant::now();
-        let h: StaticGraph = StaticGraph::from_edge_file(Path::new(filename));
+        let h: StaticGraph = StaticGraph::from_edge_file(Path::new(filename))?;
         println!("Load took {}ms", now.elapsed().as_micros() as f64 / 1000.0);
         println!("h = {}", h);
         println!("starting first threaded_triangle count");
@@ -119,7 +120,7 @@ fn main() {
     }
     if op == "threaded_triangles_csr" {
         let now = Instant::now();
-        let h: StaticGraph = StaticGraph::from_edge_file(Path::new(filename));
+        let h: StaticGraph = StaticGraph::from_edge_file(Path::new(filename))?;
         println!("Load took {}ms", now.elapsed().as_micros() as f64 / 1000.0);
         println!("h = {}", h);
         println!("starting first threaded_triangles_csr count");
@@ -140,5 +141,6 @@ fn main() {
             avg / NRUNS as f64
         );
     }
+    return Ok(())
 }
 

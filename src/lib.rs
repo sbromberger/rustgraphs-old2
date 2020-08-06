@@ -1,3 +1,4 @@
+use std::error::Error;
 use crate::traits::Graph;
 use std::fmt;
 use std::io::BufRead;
@@ -58,7 +59,7 @@ impl Graph<Vertex> for StaticGraph {
         }
     }
 
-    fn from_edge_reader(reader: impl BufRead) -> Result<Self, String> {
+    fn from_edge_reader(reader: impl BufRead) -> Result<Self, Box<dyn Error>> {
         let mut edgelist: Vec<(Vertex, Vertex)> = vec![];
         for line in reader.lines() {
             let l = line.expect("error reading reader"); // produces a std::string::String
@@ -70,7 +71,7 @@ impl Graph<Vertex> for StaticGraph {
             let s1 = eit.next().ok_or("Invalid line (first field)")?;
             let s2 = eit.next().ok_or("Invalid line (second field)")?;
             if eit.next().is_some() {
-                return Err(String::from("Invalid line (extra fields)"));
+                return Err("Invalid line (extra fields)".into());
             }
             let src: u32 = s1.parse().map_err(|_| "Invalid parse (first field)")?;
             let dst: u32 = s2.parse().map_err(|_| "Invalid parse (second field)")?;
@@ -126,7 +127,7 @@ impl Graph<Vertex> for StaticDiGraph {
         }
     }
 
-    fn from_edge_reader(reader: impl BufRead) -> Result<Self, String> {
+    fn from_edge_reader(reader: impl BufRead) -> Result<Self, Box<dyn Error>> {
         let mut edgelist: Vec<(Vertex, Vertex)> = vec![];
         for line in reader.lines() {
             let l = line.expect("error reading reader"); // produces a std::string::String
@@ -138,7 +139,7 @@ impl Graph<Vertex> for StaticDiGraph {
             let s1 = eit.next().ok_or("Invalid line (first field)")?;
             let s2 = eit.next().ok_or("Invalid line (second field)")?;
             if eit.next().is_some() {
-                return Err(String::from("Invalid line (extra fields)"));
+                return Err("Invalid line (extra fields)".into());
             }
             let src: u32 = s1.parse().map_err(|_| "Invalid parse (first field)")?;
             let dst: u32 = s2.parse().map_err(|_| "Invalid parse (second field)")?;
